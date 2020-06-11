@@ -35,7 +35,7 @@ namespace DevOps.Request.Controllers
         {
             var organization = "your org"; // todo add your organization
             var project = "your proj"; // todo add your project
-            var devOpsKey = "your secure work item key"; // todo add your devOpsKey
+            var devOpsKey = "azure devops key"; // todo add your devOpsKey
 
             // default type if not defined
             if (string.IsNullOrWhiteSpace(workItem.Type))
@@ -83,7 +83,7 @@ namespace DevOps.Request.Controllers
             var fields = "System.Title,System.State,System.WorkItemType,System.Id,System.CreatedBy,System.CreatedDate,System.Tags";
             var types = "Bug,Feature,Task,Issue";
             string _UrlServiceCreate = $"https://dev.azure.com/{organization}/{project}/_apis/wit/reporting/workitemrevisions?fields={fields}&includeLatestOnly=true&types={types}&includeTagRef=true&api-version=5.0";
-            var devOpsKey = "azure work item key"; // todo add your devOpsKey
+            var devOpsKey = "azure devops key"; // todo add your devOpsKey
 
             var workItems = HttpMethod(_UrlServiceCreate, devOpsKey, null, System.Net.Http.HttpMethod.Get);
             return Json(new { success = true, workItems = workItems });
