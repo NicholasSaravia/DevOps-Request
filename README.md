@@ -7,5 +7,6 @@ So you want this bad boy to 🏃‍♂️ ?
 follow the 📃
 
 ## Step One
-
-## Step Tow
+> update HomeController.cs todos
+![alt text](https://github.com/NicholasSaravia/DevOps-Request/readme/homecontroller.jpg)
+## Step Two
