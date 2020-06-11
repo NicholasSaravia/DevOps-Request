@@ -9,4 +9,11 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\Content\devops.css" />
+    <None Include="wwwroot\Scripts\devops.js" />
+    <None Include="wwwroot\src\list.js" />
+    <None Include="wwwroot\src\list.min.js" />
+  </ItemGroup>
+
 </Project>
