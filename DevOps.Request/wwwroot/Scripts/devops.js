@@ -2,6 +2,7 @@
 
 $(function () {
     getDevOpsItems();
+    loadFilters();
 
     $("#request-form").submit(function (event) {
 
@@ -43,35 +44,49 @@ function createObj(formValues) {
 
 function getDevOpsItems() {
 
+    const tags = {
+        title: "Created By",
+        list: []
+    }
+
     $.post("/Home/GetDevopsItems",
         {},
         function (data) {
 
-            const json = JSON.parse(data.workItems);
+            if (data.workItems !== "") {
+                const json = JSON.parse(data.workItems);
 
-            console.log(json.values);
+                console.log(json.values);
 
-            json.values.forEach((i) => {
+                json.values.forEach((i) => {
 
-                let tag = typeof (i.fields["System.Tags"]) === "undefined" ? i.fields["System.CreatedBy"] : i.fields["System.Tags"][0].Name;
+                    let tag = typeof (i.fields["System.Tags"]) === "undefined" ? i.fields["System.CreatedBy"] : i.fields["System.Tags"][0].Name;
 
-                addWorkItem({
-                    id: i.fields["System.Id"],
-                    title: i.fields["System.Title"],
-                    state: i.fields["System.State"],
-                    type: i.fields["System.WorkItemType"],
-                    tag: tag,
-                    date: i.fields["System.CreatedDate"]
-                }, false);
+                    if (tags.list[tag] === -1) {
+                        dictionary.push(tag);
+                    }
 
-            });
+                    addWorkItem({
+                        id: i.fields["System.Id"],
+                        title: i.fields["System.Title"],
+                        state: i.fields["System.State"],
+                        type: i.fields["System.WorkItemType"],
+                        tag: tag,
+                        date: i.fields["System.CreatedDate"]
+                    }, false);
 
-            let options = {
-                valueNames: ['title', 'state', 'type', 'cb', 'date', { name: 'timestamp', attr: 'data-timestamp' }]
-            };
+                });
 
-            listObj = new List('devopsList', options);
-            listObj.sort('timestamp', { order: "desc" });
+                let options = {
+                    valueNames: ['title', 'state', 'type', 'cb', 'date', { name: 'timestamp', attr: 'data-timestamp' }]
+                };
+
+                listObj = new List('devopsList', options);
+                listObj.sort('timestamp', { order: "desc" });
+
+                loadFilterIntoDom(tags);
+            }
+
         });
 }
 
@@ -130,5 +145,62 @@ function addWorkItem(item, prepend) {
     } else {
         $('.all-items').append(itemHtml);
     }
+
+}
+
+function loadFilters() {
+
+    const types = {
+        title: "Types",
+        list: [{
+            value: 'Tasks'
+        }, {
+            value: 'Bugs'
+        }, {
+            value: 'Features'
+        }, {
+            value: 'Issues'
+        }]
+    };
+    const status = {
+        title: "Status",
+        list: [{
+            value: 'New'
+        }, {
+            value: 'Active'
+        }, {
+            value: 'Resolved'
+        }, {
+            value: 'Closed'
+        }]
+    }
+
+    loadFilterIntoDom(types);
+    loadFilterIntoDom(status);
+
+}
+
+function loadFilterIntoDom(filterObj) {
+
+    let filterElement = ` 
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    ${filterObj.title}
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">`;
+
+    filterObj.list.forEach((e) => {
+        filterElement += `<div class="dropdown-item">
+                                    <div class="form-check form-check-inline">
+                                        <label class="form-check-label" for="${e.value}">
+                                            <input class="form-check-input" type="checkbox" id="${e.value}" value="${e.value}">
+                                            ${e.value}
+                                        </label>
+                                    </div>
+                                </div>`;
+    })
+
+    filterElement += `</div></div> `;
+    $('.filters').append(filterElement);
 
 }
