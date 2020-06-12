@@ -14,7 +14,7 @@ $(function () {
         let date = new Date().toLocaleDateString();
         let timestamp = new Date().getTime();
 
-        listObj.add({ title: body.title, state: "New", type: body.type, date: date, timestamp: timestamp, tag: window.userName });
+        listObj.add({ title: body.title, status: "New", type: body.type, date: date, timestamp: timestamp, tag: window.userName });
         listObj.search($('.search').val());
 
         $(event.target)[0].reset();
@@ -30,6 +30,13 @@ $(function () {
 
     });
 
+    $('body ').on('change', '.dropdown-item input', (e) => {
+
+        $('.dropdown-item input:checked').each((index, item) => {
+           console.log(index, item)
+        });
+
+    });
 
 });
 
@@ -54,22 +61,29 @@ function getDevOpsItems() {
         function (data) {
 
             if (data.workItems !== "") {
-                const json = JSON.parse(data.workItems);
+
+                let json = null;
+                // the reason for this is because sometimes azure returns the stirng in result and other times not.
+                try {
+                    json = JSON.parse(data.workItems);
+                } catch{
+                    json = JSON.parse(data.workItems.result);
+                }
 
                 console.log(json.values);
 
                 json.values.forEach((i) => {
 
-                    let tag = typeof (i.fields["System.Tags"]) === "undefined" ? i.fields["System.CreatedBy"] : i.fields["System.Tags"][0].Name;
+                    let tag = typeof (i.fields["System.Tags"]) === "undefined" ? i.fields["System.CreatedBy"] : i.fields["System.Tags"][0].name;
 
-                    if (tags.list[tag] === -1) {
-                        dictionary.push(tag);
+                    if (tags.list.indexOf(tag) === -1) {
+                        tags.list.push({ value: tag });
                     }
 
                     addWorkItem({
                         id: i.fields["System.Id"],
                         title: i.fields["System.Title"],
-                        state: i.fields["System.State"],
+                        status: i.fields["System.State"],
                         type: i.fields["System.WorkItemType"],
                         tag: tag,
                         date: i.fields["System.CreatedDate"]
@@ -78,7 +92,7 @@ function getDevOpsItems() {
                 });
 
                 let options = {
-                    valueNames: ['title', 'state', 'type', 'cb', 'date', { name: 'timestamp', attr: 'data-timestamp' }]
+                    valueNames: ['title', 'status', 'type', 'cb', 'date', { name: 'timestamp', attr: 'data-timestamp' }]
                 };
 
                 listObj = new List('devopsList', options);
@@ -133,7 +147,7 @@ function addWorkItem(item, prepend) {
 
     const itemHtml = `<div class="work-item">
                         <div class="title"><span style="text-decoration: underline">${itemId}</span> - ${item.title}</div>
-                        <div class="state"> Status: &nbsp <span data-state="${item.state}">${item.state}<span></div>
+                        <div class="status"> Status: &nbsp <span data-state="${item.status}">${item.status}<span></div>
                         <div class="cb"> <span><span style="color:black">Created By:</span> ${item.tag} </span><span class="date timestamp" data-timestamp="${timestamp}">${date}</span></div>
                         <div class="type" data-color="${color.join("")}">
                             ${item.type}
@@ -175,6 +189,7 @@ function loadFilters() {
         }]
     }
 
+    $('.filters').append('<div class="sort-by">Filter By:</div>');
     loadFilterIntoDom(types);
     loadFilterIntoDom(status);
 
@@ -193,7 +208,7 @@ function loadFilterIntoDom(filterObj) {
         filterElement += `<div class="dropdown-item">
                                     <div class="form-check form-check-inline">
                                         <label class="form-check-label" for="${e.value}">
-                                            <input class="form-check-input" type="checkbox" id="${e.value}" value="${e.value}">
+                                            <input class="form-check-input" type="checkbox" id="${e.value}" data-title="${filterObj.title}" value="${e.value}">
                                             ${e.value}
                                         </label>
                                     </div>
