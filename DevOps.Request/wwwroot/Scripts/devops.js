@@ -10,12 +10,15 @@ $(function () {
         const formValues = $(event.target).serializeArray();
         const body = createObj(formValues);
 
-        //todo get user name and add to this list
-        let date = new Date().toLocaleDateString();
-        let timestamp = new Date().getTime();
+        addWorkItem({
+            title: body.title,
+            status: "New",
+            type: body.type,
+            tag: window.userName,
+            date: i.fields["System.CreatedDate"]
+        }, false);
 
-        listObj.add({ title: body.title, status: "New", type: body.type, date: date, timestamp: timestamp, tag: window.userName });
-        listObj.search($('.search').val());
+        search();
 
         $(event.target)[0].reset();
 
@@ -32,10 +35,22 @@ $(function () {
 
     $('body ').on('change', '.dropdown-item input', (e) => {
 
+        sortObj = {};
+
         $('.dropdown-item input:checked').each((index, item) => {
-           console.log(index, item)
+            let group = $(item).attr("data-title") === "Created By" ? "tag" : $(item).attr("data-title").toLowerCase();
+            let id = $(item).attr("id");
+
+            if (typeof (sortObj[group]) === "undefined") {
+                sortObj[group] = [];
+                sortObj[group].push(id);
+            } else {
+                sortObje[group].push(id);
+            }
+
         });
 
+        console.log(sortObj);
     });
 
 });
@@ -91,13 +106,8 @@ function getDevOpsItems() {
 
                 });
 
-                let options = {
-                    valueNames: ['title', 'status', 'type', 'cb', 'date', { name: 'timestamp', attr: 'data-timestamp' }]
-                };
 
-                listObj = new List('devopsList', options);
-                listObj.sort('timestamp', { order: "desc" });
-
+                // search() default should order by timestamp
                 loadFilterIntoDom(tags);
             }
 
@@ -148,7 +158,7 @@ function addWorkItem(item, prepend) {
     const itemHtml = `<div class="work-item">
                         <div class="title"><span style="text-decoration: underline">${itemId}</span> - ${item.title}</div>
                         <div class="status"> Status: &nbsp <span data-state="${item.status}">${item.status}<span></div>
-                        <div class="cb"> <span><span style="color:black">Created By:</span> ${item.tag} </span><span class="date timestamp" data-timestamp="${timestamp}">${date}</span></div>
+                        <div class="tag"> <span><span style="color:black">Created By:</span> ${item.tag} </span><span class="date timestamp" data-timestamp="${timestamp}">${date}</span></div>
                         <div class="type" data-color="${color.join("")}">
                             ${item.type}
                         </div>
@@ -189,7 +199,7 @@ function loadFilters() {
         }]
     }
 
-    $('.filters').append('<div class="sort-by">Filter By:</div>');
+    $('.filters').append('<div class="sort-by">Filter:</div>');
     loadFilterIntoDom(types);
     loadFilterIntoDom(status);
 
@@ -218,4 +228,8 @@ function loadFilterIntoDom(filterObj) {
     filterElement += `</div></div> `;
     $('.filters').append(filterElement);
 
+}
+
+function search() {
+    console.log("searched");
 }
